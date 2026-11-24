@@ -1,0 +1,6 @@
+page:
+    page:
+        empty_online: A page online needs a text.
+    slug:
+        format: Lowercase letters and digits, separated by hyphens.
+        taken: Another page already uses the address "{{ slug }}".

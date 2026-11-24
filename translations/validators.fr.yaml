@@ -1,0 +1,6 @@
+page:
+    page:
+        empty_online: Une page en ligne doit avoir un texte.
+    slug:
+        format: "Lettres minuscules et chiffres, séparés par des tirets."
+        taken: "Une autre page utilise déjà l'adresse « {{ slug }} »."

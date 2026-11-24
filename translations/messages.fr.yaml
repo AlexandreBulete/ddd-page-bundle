@@ -1,0 +1,16 @@
+page:
+    ui:
+        pages: Pages
+    menu:
+        pages: Pages
+    page:
+        index: Pages
+        title: Titre
+        body: Texte
+        body_help: "En Markdown : ## pour un intertitre, **gras**, *italique*, [lien](https://…), - pour une liste. Le HTML n'est pas interprété."
+        published: En ligne
+        published_help: "Décochée, la page n'existe pas pour les visiteurs."
+        updated_at: Mise à jour
+    slug:
+        label: Adresse
+        help: "La fin de l'URL, par exemple mentions-legales. Vide : tirée du titre."

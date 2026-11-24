@@ -1,0 +1,16 @@
+page:
+    ui:
+        pages: Pages
+    menu:
+        pages: Pages
+    page:
+        index: Pages
+        title: Title
+        body: Text
+        body_help: "In Markdown: ## for a subheading, **bold**, *italic*, [link](https://…), - for a list. HTML is not interpreted."
+        published: Online
+        published_help: Unticked, the page does not exist for visitors.
+        updated_at: Updated
+    slug:
+        label: Address
+        help: "The end of the URL, e.g. legal-notice. Empty: taken from the title."
