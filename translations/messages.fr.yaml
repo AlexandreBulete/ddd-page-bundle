@@ -7,7 +7,7 @@ page:
         index: Pages
         title: Titre
         body: Texte
-        body_help: "En Markdown : ## pour un intertitre, **gras**, *italique*, [lien](https://…), - pour une liste. Le HTML n'est pas interprété."
+        body_help: "Tapez / en début de ligne pour un intertitre, une citation ou une liste ; sélectionnez du texte pour le gras, l'italique ou un lien. Enregistré en Markdown, sans HTML."
         published: En ligne
         published_help: "Décochée, la page n'existe pas pour les visiteurs."
         updated_at: Mise à jour
