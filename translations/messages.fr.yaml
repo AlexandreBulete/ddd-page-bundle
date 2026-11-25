@@ -1,6 +1,9 @@
 page:
     ui:
         pages: Pages
+        page: page
+        new_page: Nouvelle page
+        edit_page: Modifier la page
     menu:
         pages: Pages
     page:
