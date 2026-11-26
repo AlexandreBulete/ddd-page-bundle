@@ -20,6 +20,6 @@ final readonly class FindPublishedPagesHandler
      */
     public function __invoke(FindPublishedPagesQuery $query): array
     {
-        return $this->pages->published();
+        return $this->pages->published($query->placement);
     }
 }

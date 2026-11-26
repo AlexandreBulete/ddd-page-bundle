@@ -11,6 +11,9 @@ page:
         title: Titre
         body: Texte
         body_help: "Tapez / en début de ligne pour un intertitre, une citation ou une liste ; sélectionnez du texte pour le gras, l'italique ou un lien. Enregistré en Markdown, sans HTML."
+        placement: "Emplacement"
+        placement_help: "Où le site affiche un lien vers la page. « Nulle part » : accessible seulement par son adresse."
+        placement_none: "Nulle part"
         published: En ligne
         published_help: "Décochée, la page n'existe pas pour les visiteurs."
         updated_at: Mise à jour

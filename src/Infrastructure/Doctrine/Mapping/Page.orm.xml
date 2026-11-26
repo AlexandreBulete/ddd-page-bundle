@@ -7,6 +7,9 @@
         <unique-constraints>
             <unique-constraint columns="slug"/>
         </unique-constraints>
+        <indexes>
+            <index name="idx_page_placement" columns="placement"/>
+        </indexes>
         <id name="id" type="page_id"/>
         <field name="title" type="string" length="200"/>
         <field name="slug" type="page_slug" length="190"/>
@@ -14,5 +17,6 @@
         <field name="published" type="boolean"/>
         <field name="createdAt" type="datetime_immutable" column="created_at"/>
         <field name="updatedAt" type="datetime_immutable" column="updated_at"/>
+        <field name="placement" type="page_placement" length="50" nullable="true"/>
     </entity>
 </doctrine-mapping>

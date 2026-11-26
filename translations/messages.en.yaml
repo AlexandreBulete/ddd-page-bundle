@@ -11,6 +11,9 @@ page:
         title: Title
         body: Text
         body_help: "Type / at the start of a line for a subheading, a quote or a list; select text for bold, italic or a link. Saved as Markdown, without HTML."
+        placement: "Placement"
+        placement_help: "Where the site links the page. Nowhere: reachable by its address only."
+        placement_none: "Nowhere"
         published: Online
         published_help: Unticked, the page does not exist for visitors.
         updated_at: Updated

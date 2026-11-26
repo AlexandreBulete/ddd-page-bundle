@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace AlexandreBulete\DddPageBundle\Tests\Unit\Domain;
 
 use AlexandreBulete\DddPageBundle\Domain\Event\PageCreated;
+use AlexandreBulete\DddPageBundle\Domain\Event\PagePlaced;
 use AlexandreBulete\DddPageBundle\Domain\Event\PagePublished;
 use AlexandreBulete\DddPageBundle\Domain\Event\PageSlugChanged;
 use AlexandreBulete\DddPageBundle\Domain\Exception\EmptyPageException;
 use AlexandreBulete\DddPageBundle\Domain\Model\Page;
 use AlexandreBulete\DddPageBundle\Domain\ValueObject\PageId;
+use AlexandreBulete\DddPageBundle\Domain\ValueObject\Placement;
 use AlexandreBulete\DddPageBundle\Domain\ValueObject\Slug;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -72,6 +74,32 @@ final class PageTest extends TestCase
         self::assertSame('privacy', $events[0]->previousSlug);
         self::assertInstanceOf(PagePublished::class, $events[1]);
         self::assertEquals($later, $page->updatedAt);
+    }
+
+    #[Test]
+    public function placing_a_page_keeps_its_date_and_records_the_move(): void
+    {
+        $page = Page::create(PageId::generate(), 'Legal notice', Slug::fromString('legal-notice'), 'Text.', $this->now);
+        $page->releaseEvents();
+
+        $page->place(Placement::fromString('legal'));
+        $page->place(Placement::fromString('legal'));
+        $page->place(null);
+
+        $events = $page->releaseEvents();
+        self::assertCount(2, $events);
+        self::assertInstanceOf(PagePlaced::class, $events[1]);
+        self::assertSame('legal', $events[1]->previousPlacement);
+        self::assertNull($page->placement);
+        self::assertEquals($this->now, $page->updatedAt);
+    }
+
+    #[Test]
+    public function a_placement_is_a_lowercase_key(): void
+    {
+        self::assertSame('footer_legal', Placement::fromString(' footer_legal ')->value());
+        $this->expectException(\InvalidArgumentException::class);
+        Placement::fromString('Footer legal');
     }
 
     #[Test]

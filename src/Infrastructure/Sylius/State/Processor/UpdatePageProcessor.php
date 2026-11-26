@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AlexandreBulete\DddPageBundle\Infrastructure\Sylius\State\Processor;
 
 use AlexandreBulete\DddPageBundle\Application\Command\ChangePageSlug\ChangePageSlugCommand;
+use AlexandreBulete\DddPageBundle\Application\Command\PlacePage\PlacePageCommand;
 use AlexandreBulete\DddPageBundle\Application\Command\PublishPage\PublishPageCommand;
 use AlexandreBulete\DddPageBundle\Application\Command\RetitlePage\RetitlePageCommand;
 use AlexandreBulete\DddPageBundle\Application\Command\RewritePage\RewritePageCommand;
@@ -12,6 +13,7 @@ use AlexandreBulete\DddPageBundle\Application\Command\UnpublishPage\UnpublishPag
 use AlexandreBulete\DddPageBundle\Application\Query\FindPage\FindPageQuery;
 use AlexandreBulete\DddPageBundle\Domain\Model\Page;
 use AlexandreBulete\DddPageBundle\Domain\ValueObject\PageId;
+use AlexandreBulete\DddPageBundle\Domain\ValueObject\Placement;
 use AlexandreBulete\DddPageBundle\Domain\ValueObject\Slug;
 use AlexandreBulete\DddPageBundle\Infrastructure\Sylius\Resource\PageResource;
 use AlexandreBulete\DddFoundation\Application\Command\CommandBusInterface;
@@ -60,6 +62,11 @@ final readonly class UpdatePageProcessor implements ProcessorInterface
         if ($body !== $page->body) {
             /** @var Page $page */
             $page = $this->commandBus->dispatch(new RewritePageCommand($id, $body));
+        }
+        $placement = $data->placement !== null && $data->placement !== '' ? $data->placement : null;
+        if ($placement !== $page->placement?->value()) {
+            /** @var Page $page */
+            $page = $this->commandBus->dispatch(new PlacePageCommand($id, $placement === null ? null : Placement::fromString($placement)));
         }
         if ($data->published && !$page->published) {
             /** @var Page $page */

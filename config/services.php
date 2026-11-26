@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use AlexandreBulete\DddPageBundle\Domain\Repository\PageRepositoryInterface;
 use AlexandreBulete\DddPageBundle\Domain\Service\DomainEventPublisherInterface;
+use AlexandreBulete\DddPageBundle\Domain\Service\PlacementCatalogInterface;
 use AlexandreBulete\DddPageBundle\Domain\Service\SlugGeneratorInterface;
+use AlexandreBulete\DddPageBundle\Infrastructure\Config\ConfiguredPlacementCatalog;
 use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\DoctrinePageRepository;
 use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\ImmediateEventPublisher;
 use AlexandreBulete\DddPageBundle\Infrastructure\Text\AsciiSlugGenerator;
@@ -36,4 +38,5 @@ return static function (ContainerConfigurator $container): void {
     $services->alias(PageRepositoryInterface::class, DoctrinePageRepository::class);
     $services->alias(DomainEventPublisherInterface::class, ImmediateEventPublisher::class);
     $services->alias(SlugGeneratorInterface::class, AsciiSlugGenerator::class);
+    $services->alias(PlacementCatalogInterface::class, ConfiguredPlacementCatalog::class);
 };

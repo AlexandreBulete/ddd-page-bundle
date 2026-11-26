@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace AlexandreBulete\DddPageBundle;
 
+use AlexandreBulete\DddPageBundle\Infrastructure\Config\ConfiguredPlacementCatalog;
 use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\Type\PageIdType;
+use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\Type\PlacementType;
 use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\Type\SlugType;
 use Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
@@ -16,7 +18,7 @@ use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
  * Standalone pages (legal notice, privacy policy…), written in Markdown in a
  * Sylius back office and read through public queries.
  *
- * @phpstan-type PageConfig array{admin: array{enabled: bool}}
+ * @phpstan-type PageConfig array{admin: array{enabled: bool}, placements: array<string, array{label: string, exclusive: bool}>}
  */
 final class DddPageBundle extends AbstractBundle
 {
@@ -35,6 +37,21 @@ final class DddPageBundle extends AbstractBundle
                         ->end()
                     ->end()
                 ->end()
+                ->arrayNode('placements')
+                    ->info('Where the site links pages: key => label (or {label, exclusive}). An exclusive placement holds one page.')
+                    ->example(['legal' => 'Footer — legal', 'about' => ['label' => 'About page', 'exclusive' => true]])
+                    ->useAttributeAsKey('key')
+                    ->arrayPrototype()
+                        ->beforeNormalization()
+                            ->ifString()
+                            ->then(static fn (string $label): array => ['label' => $label])
+                        ->end()
+                        ->children()
+                            ->scalarNode('label')->isRequired()->cannotBeEmpty()->end()
+                            ->booleanNode('exclusive')->defaultFalse()->end()
+                        ->end()
+                    ->end()
+                ->end()
             ->end();
     }
 
@@ -45,6 +62,7 @@ final class DddPageBundle extends AbstractBundle
     {
         /** @var PageConfig $config */
         $container->import($this->getPath() . '/config/services.php');
+        $container->services()->get(ConfiguredPlacementCatalog::class)->arg('$placements', $config['placements']);
         if ($config['admin']['enabled']) {
             $container->import($this->getPath() . '/config/services_admin.php');
         }
@@ -56,7 +74,7 @@ final class DddPageBundle extends AbstractBundle
     public function prependExtension(ContainerConfigurator $container, ContainerBuilder $builder): void
     {
         $builder->prependExtensionConfig('doctrine', [
-            'dbal' => ['types' => [PageIdType::NAME => PageIdType::class, SlugType::NAME => SlugType::class]],
+            'dbal' => ['types' => [PageIdType::NAME => PageIdType::class, SlugType::NAME => SlugType::class, PlacementType::NAME => PlacementType::class]],
             'orm' => [
                 'mappings' => [
                     'Page' => [

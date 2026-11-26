@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AlexandreBulete\DddPageBundle\Domain\Repository;
 
 use AlexandreBulete\DddPageBundle\Domain\Model\Page;
+use AlexandreBulete\DddPageBundle\Domain\ValueObject\Placement;
 use AlexandreBulete\DddPageBundle\Domain\ValueObject\Slug;
 use AlexandreBulete\DddFoundation\Domain\Repository\RepositoryInterface;
 
@@ -20,9 +21,16 @@ interface PageRepositoryInterface extends RepositoryInterface
     public function findBySlug(Slug $slug): ?Page;
 
     /**
-     * Every page online, by title.
+     * Every page online, by title; only those of a placement when given.
      *
      * @return list<Page>
      */
-    public function published(): array;
+    public function published(?Placement $placement = null): array;
+
+    /**
+     * Every page of a placement, online or not.
+     *
+     * @return list<Page>
+     */
+    public function placedAt(Placement $placement): array;
 }

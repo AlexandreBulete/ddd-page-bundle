@@ -7,6 +7,7 @@ namespace AlexandreBulete\DddPageBundle\Infrastructure\Sylius\Grid;
 use AlexandreBulete\DddPageBundle\Application\Query\FindPages\FindPagesQuery;
 use AlexandreBulete\DddPageBundle\Domain\Model\Page;
 use AlexandreBulete\DddPageBundle\Domain\Repository\PageRepositoryInterface;
+use AlexandreBulete\DddPageBundle\Infrastructure\Config\ConfiguredPlacementCatalog;
 use AlexandreBulete\DddPageBundle\Infrastructure\Sylius\Resource\PageResource;
 use AlexandreBulete\DddFoundation\Application\Query\QueryBusInterface;
 use AlexandreBulete\DddSyliusBundle\Grid\GridPageResolver;
@@ -21,6 +22,7 @@ final readonly class PageGridProvider implements DataProviderInterface
 {
     public function __construct(
         private QueryBusInterface $queryBus,
+        private ConfiguredPlacementCatalog $placements,
     ) {}
 
     /**
@@ -41,7 +43,8 @@ final readonly class PageGridProvider implements DataProviderInterface
         $data = [];
         foreach ($models as $model) {
             /** @var Page $model */
-            $data[] = PageResource::fromModel($model);
+            $placement = $model->placement?->value();
+            $data[] = PageResource::fromModel($model, $placement === null ? null : ($this->placements->label($placement) ?? $placement));
         }
 
         return new Pagerfanta(new FixedAdapter($models->count(), $data));

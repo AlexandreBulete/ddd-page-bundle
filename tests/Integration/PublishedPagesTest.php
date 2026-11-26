@@ -8,14 +8,20 @@ use AlexandreBulete\DddPageBundle\Application\Command\ChangePageSlug\ChangePageS
 use AlexandreBulete\DddPageBundle\Application\Command\ChangePageSlug\ChangePageSlugHandler;
 use AlexandreBulete\DddPageBundle\Application\Command\CreatePage\CreatePageCommand;
 use AlexandreBulete\DddPageBundle\Application\Command\CreatePage\CreatePageHandler;
+use AlexandreBulete\DddPageBundle\Application\Command\PlacePage\PlacePageCommand;
+use AlexandreBulete\DddPageBundle\Application\Command\PlacePage\PlacePageHandler;
 use AlexandreBulete\DddPageBundle\Application\Command\PublishPage\PublishPageCommand;
 use AlexandreBulete\DddPageBundle\Application\Command\PublishPage\PublishPageHandler;
 use AlexandreBulete\DddPageBundle\Application\Query\FindPublishedPage\FindPublishedPageHandler;
 use AlexandreBulete\DddPageBundle\Application\Query\FindPublishedPage\FindPublishedPageQuery;
 use AlexandreBulete\DddPageBundle\Domain\Exception\PageNotFoundException;
+use AlexandreBulete\DddPageBundle\Domain\Exception\PlacementTakenException;
+use AlexandreBulete\DddPageBundle\Domain\Exception\UnknownPlacementException;
 use AlexandreBulete\DddPageBundle\Domain\Exception\SlugAlreadyUsedException;
 use AlexandreBulete\DddPageBundle\Domain\Model\Page;
+use AlexandreBulete\DddPageBundle\Domain\ValueObject\Placement;
 use AlexandreBulete\DddPageBundle\Domain\ValueObject\Slug;
+use AlexandreBulete\DddPageBundle\Infrastructure\Config\ConfiguredPlacementCatalog;
 use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\DoctrinePageRepository;
 use AlexandreBulete\DddPageBundle\Infrastructure\Text\AsciiSlugGenerator;
 use AlexandreBulete\DddPageBundle\Tests\Integration\Fixture\NullEventPublisher;
@@ -68,13 +74,53 @@ final class PublishedPagesTest extends TestCase
         (new ChangePageSlugHandler($this->pages, $this->clock))(new ChangePageSlugCommand($other->id, Slug::fromString('mentions-legales')));
     }
 
+    #[Test]
+    public function a_placement_lists_its_pages_online_only(): void
+    {
+        $this->place($this->online($this->create('Mentions légales')), 'legal');
+        $this->place($this->create('Brouillon légal'), 'legal');
+        $this->online($this->create('Ailleurs'));
+        $this->em->clear();
+
+        self::assertSame(['Mentions légales'], array_map(static fn (Page $p): string => $p->title, $this->pages->published(Placement::fromString('legal'))));
+        self::assertCount(2, $this->pages->published());
+    }
+
+    #[Test]
+    public function an_exclusive_placement_holds_one_page(): void
+    {
+        $this->place($this->create('À propos'), 'about');
+        $this->place($this->create('Mentions'), 'legal');
+        $other = $this->create('Qui suis-je');
+
+        try {
+            $this->place($other, 'about');
+            self::fail('Expected the placement to be taken.');
+        } catch (PlacementTakenException $e) {
+            self::assertSame('À propos', $e->holder);
+        }
+
+        $this->expectException(UnknownPlacementException::class);
+        $this->place($other, 'sidebar');
+    }
+
+    private function place(Page $page, ?string $placement): Page
+    {
+        $catalog = new ConfiguredPlacementCatalog([
+            'legal' => ['label' => 'Footer', 'exclusive' => false],
+            'about' => ['label' => 'About', 'exclusive' => true],
+        ]);
+
+        return (new PlacePageHandler($this->pages, $catalog))(new PlacePageCommand($page->id, $placement === null ? null : Placement::fromString($placement)));
+    }
+
     private function create(string $title): Page
     {
         return (new CreatePageHandler($this->pages, new AsciiSlugGenerator(), $this->clock))(new CreatePageCommand($title, null, 'Texte.'));
     }
 
-    private function online(Page $page): void
+    private function online(Page $page): Page
     {
-        (new PublishPageHandler($this->pages, $this->clock))(new PublishPageCommand($page->id));
+        return (new PublishPageHandler($this->pages, $this->clock))(new PublishPageCommand($page->id));
     }
 }

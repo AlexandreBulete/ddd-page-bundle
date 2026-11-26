@@ -7,7 +7,9 @@ namespace AlexandreBulete\DddPageBundle\Infrastructure\Doctrine;
 use AlexandreBulete\DddPageBundle\Domain\Model\Page;
 use AlexandreBulete\DddPageBundle\Domain\Repository\PageRepositoryInterface;
 use AlexandreBulete\DddPageBundle\Domain\Service\DomainEventPublisherInterface;
+use AlexandreBulete\DddPageBundle\Domain\ValueObject\Placement;
 use AlexandreBulete\DddPageBundle\Domain\ValueObject\Slug;
+use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\Type\PlacementType;
 use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\Type\SlugType;
 use AlexandreBulete\DddDoctrineBridge\DoctrineRepository;
 use AlexandreBulete\DddFoundation\Domain\ValueObject\IdentifierVO;
@@ -63,14 +65,32 @@ final class DoctrinePageRepository extends DoctrineRepository implements PageRep
         return $page instanceof Page ? $page : null;
     }
 
-    public function published(): array
+    public function published(?Placement $placement = null): array
+    {
+        $query = $this->em->createQueryBuilder()
+            ->select('p')
+            ->from(Page::class, 'p')
+            ->where('p.published = :published')
+            ->setParameter('published', true)
+            ->orderBy('p.title', 'ASC');
+        if ($placement !== null) {
+            $query->andWhere('p.placement = :placement')->setParameter('placement', $placement, PlacementType::NAME);
+        }
+
+        /** @var list<Page> $pages */
+        $pages = $query->getQuery()->getResult();
+
+        return $pages;
+    }
+
+    public function placedAt(Placement $placement): array
     {
         /** @var list<Page> $pages */
         $pages = $this->em->createQueryBuilder()
             ->select('p')
             ->from(Page::class, 'p')
-            ->where('p.published = :published')
-            ->setParameter('published', true)
+            ->where('p.placement = :placement')
+            ->setParameter('placement', $placement, PlacementType::NAME)
             ->orderBy('p.title', 'ASC')
             ->getQuery()
             ->getResult();

@@ -1,3 +1,5 @@
 domain_refusal:
     empty_page_exception: An empty page cannot go online, nor be emptied once online.
     slug_already_used_exception: Another page already uses the address "%slug%".
+    unknown_placement_exception: "The site offers no placement “%placement%”."
+    placement_taken_exception: "The page “%holder%” already holds this placement: move it off first."

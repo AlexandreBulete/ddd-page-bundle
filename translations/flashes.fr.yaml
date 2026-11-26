@@ -1,3 +1,5 @@
 domain_refusal:
     empty_page_exception: "Une page vide ne peut pas être mise en ligne, ni vidée une fois en ligne."
     slug_already_used_exception: "Une autre page utilise déjà l'adresse « %slug% »."
+    unknown_placement_exception: "Le site ne propose pas l'emplacement « %placement% »."
+    placement_taken_exception: "La page « %holder% » occupe déjà cet emplacement : retirez-l'en d'abord."

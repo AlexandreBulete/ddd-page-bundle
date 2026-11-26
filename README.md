@@ -18,18 +18,22 @@ bundle's own migration.
 
 | Aggregate | Holds |
 |---|---|
-| `Page` | title, slug, Markdown body, online or not, created and last updated |
+| `Page` | title, slug, Markdown body, online or not, placement, created and last updated |
 
 - A page starts **offline**. An empty page cannot go online, and a page online
   cannot be emptied.
 - The last update date moves with the title, the address or the text — what a
   legal page has to show.
 - No author, no category, no scheduling: that is a blog's job.
+- A **placement** says where the site links the page — its footer, its menu,
+  a reserved spot — or nowhere (reachable by its address only). The
+  application declares the placements; an **exclusive** one holds a single
+  page. Placing a page does not move its last update date.
 
 ## Use cases
 
 Commands: `CreatePage` (slug derived from the title when none is given),
-`RetitlePage`, `ChangePageSlug`, `RewritePage`, `PublishPage`,
+`RetitlePage`, `ChangePageSlug`, `RewritePage`, `PlacePage`, `PublishPage`,
 `UnpublishPage`, `DeletePage`.
 
 Queries: `FindPages`, `FindPage` (back office), `FindPublishedPage` and
@@ -62,14 +66,18 @@ public function __invoke(string $slug, QueryBusInterface $queryBus): Response
 <p>Updated {{ page.updatedAt|date('Y-m-d') }}</p>
 {{ page.body|page_markdown }}
 
-{# a footer #}
-{% for page in published_pages() %}
+{# a footer: the pages online of the `legal` placement #}
+{% for page in published_pages('legal') %}
     <a href="{{ path('page', {slug: page.slug.value}) }}">{{ page.title }}</a>
 {% endfor %}
+
+{# a reserved spot: the page online of an exclusive placement, or null #}
+{% set about = placed_page('about') %}
 ```
 
 `page_markdown` escapes raw HTML and drops unsafe links: its output is printed
-as is. `published_pages()` asks once per request.
+as is. `published_pages()` (every page online without an argument) asks once
+per request and placement.
 
 ## Configuration
 
@@ -77,7 +85,15 @@ as is. `published_pages()` asks once per request.
 page:
     admin:
         enabled: true   # Sylius screens; false for a headless setup
+    placements:         # where the site links pages; none by default
+        legal: Footer — legal
+        menu: Main menu
+        about: { label: About page, exclusive: true }
 ```
+
+Labels are translated in the `messages` domain: a key works as well as a
+text. Renaming or dropping a placement leaves the pages on it in the database
+but linked from nowhere — the template no longer asks for them.
 
 ## Seams
 
@@ -86,6 +102,7 @@ page:
 | `DomainEventPublisherInterface` | `ImmediateEventPublisher` (in-process, in the transaction) | an outbox |
 | `PageRepositoryInterface` | Doctrine | another storage |
 | `SlugGeneratorInterface` | `AsciiSlugGenerator` (Symfony String) | another transliteration |
+| `PlacementCatalogInterface` | `ConfiguredPlacementCatalog` (`page.placements`) | placements stored elsewhere |
 
 ## Development
 

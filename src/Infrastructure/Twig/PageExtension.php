@@ -6,6 +6,7 @@ namespace AlexandreBulete\DddPageBundle\Infrastructure\Twig;
 
 use AlexandreBulete\DddPageBundle\Application\Query\FindPublishedPages\FindPublishedPagesQuery;
 use AlexandreBulete\DddPageBundle\Domain\Model\Page;
+use AlexandreBulete\DddPageBundle\Domain\ValueObject\Placement;
 use AlexandreBulete\DddPageBundle\Infrastructure\Markdown\MarkdownRenderer;
 use AlexandreBulete\DddFoundation\Application\Query\QueryBusInterface;
 use Twig\Extension\AbstractExtension;
@@ -13,13 +14,15 @@ use Twig\TwigFilter;
 use Twig\TwigFunction;
 
 /**
- * `page.body|page_markdown` renders a page; `published_pages()` lists the
- * pages online, for a footer — asked once per request.
+ * `page.body|page_markdown` renders a page; `published_pages('legal')` lists
+ * the pages online of a placement (all of them without one), for a footer or
+ * a menu; `placed_page('about')` is the page online of an exclusive
+ * placement, or null. Each list is asked once per request.
  */
 final class PageExtension extends AbstractExtension
 {
-    /** @var list<Page>|null */
-    private ?array $published = null;
+    /** @var array<string, list<Page>> */
+    private array $published = [];
 
     public function __construct(
         private readonly MarkdownRenderer $markdown,
@@ -37,20 +40,27 @@ final class PageExtension extends AbstractExtension
     {
         return [
             new TwigFunction('published_pages', $this->publishedPages(...)),
+            new TwigFunction('placed_page', $this->placedPage(...)),
         ];
     }
 
     /**
      * @return list<Page>
      */
-    public function publishedPages(): array
+    public function publishedPages(?string $placement = null): array
     {
-        if ($this->published === null) {
+        $key = $placement ?? '';
+        if (!isset($this->published[$key])) {
             /** @var list<Page> $pages */
-            $pages = $this->queryBus->ask(new FindPublishedPagesQuery());
-            $this->published = $pages;
+            $pages = $this->queryBus->ask(new FindPublishedPagesQuery($placement === null ? null : Placement::fromString($placement)));
+            $this->published[$key] = $pages;
         }
 
-        return $this->published;
+        return $this->published[$key];
+    }
+
+    public function placedPage(string $placement): ?Page
+    {
+        return $this->publishedPages($placement)[0] ?? null;
     }
 }

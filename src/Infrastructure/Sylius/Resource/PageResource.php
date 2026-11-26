@@ -51,6 +51,9 @@ final class PageResource implements ResourceInterface
         public ?string $body = null,
         public bool $published = false,
         public ?\DateTimeImmutable $updatedAt = null,
+        public ?string $placement = null,
+        /** The placement's label, for the list. */
+        public ?string $placementLabel = null,
     ) {}
 
     public function getId(): ?AbstractUid
@@ -70,7 +73,7 @@ final class PageResource implements ResourceInterface
         }
     }
 
-    public static function fromModel(Page $page): self
+    public static function fromModel(Page $page, ?string $placementLabel = null): self
     {
         return new self(
             id: $page->id->value(),
@@ -79,6 +82,8 @@ final class PageResource implements ResourceInterface
             body: $page->body,
             published: $page->published,
             updatedAt: $page->updatedAt,
+            placement: $page->placement?->value(),
+            placementLabel: $placementLabel,
         );
     }
 }

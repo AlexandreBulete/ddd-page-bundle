@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace AlexandreBulete\DddPageBundle\Infrastructure\Sylius\State\Processor;
 
 use AlexandreBulete\DddPageBundle\Application\Command\CreatePage\CreatePageCommand;
+use AlexandreBulete\DddPageBundle\Application\Command\PlacePage\PlacePageCommand;
 use AlexandreBulete\DddPageBundle\Application\Command\PublishPage\PublishPageCommand;
 use AlexandreBulete\DddPageBundle\Domain\Model\Page;
+use AlexandreBulete\DddPageBundle\Domain\ValueObject\Placement;
 use AlexandreBulete\DddPageBundle\Domain\ValueObject\Slug;
 use AlexandreBulete\DddPageBundle\Infrastructure\Sylius\Resource\PageResource;
 use AlexandreBulete\DddFoundation\Application\Command\CommandBusInterface;
@@ -32,6 +34,10 @@ final readonly class CreatePageProcessor implements ProcessorInterface
             slug: $data->slug !== null && $data->slug !== '' ? Slug::fromString($data->slug) : null,
             body: $data->body ?? '',
         ));
+        if ($data->placement !== null && $data->placement !== '') {
+            /** @var Page $page */
+            $page = $this->commandBus->dispatch(new PlacePageCommand($page->id, Placement::fromString($data->placement)));
+        }
         if ($data->published) {
             /** @var Page $page */
             $page = $this->commandBus->dispatch(new PublishPageCommand($page->id));

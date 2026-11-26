@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace AlexandreBulete\DddPageBundle\Tests\Integration;
 
 use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\Migrations\Version20261124100000;
+use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\Migrations\Version20261126100000;
 use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\Type\PageIdType;
+use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\Type\PlacementType;
 use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\Type\SlugType;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
@@ -26,7 +28,7 @@ final class PageDatabase
 {
     public static function migrated(): EntityManagerInterface
     {
-        foreach ([PageIdType::NAME => PageIdType::class, SlugType::NAME => SlugType::class] as $name => $class) {
+        foreach ([PageIdType::NAME => PageIdType::class, SlugType::NAME => SlugType::class, PlacementType::NAME => PlacementType::class] as $name => $class) {
             if (!Type::hasType($name)) {
                 Type::addType($name, $class);
             }
@@ -46,12 +48,14 @@ final class PageDatabase
         }
 
         // What `doctrine:migrations:migrate` does for a Schema API migration.
-        $migration = new Version20261124100000($connection, new NullLogger());
-        $from = $schemaManager->introspectSchema();
-        $to = clone $from;
-        $migration->up($to);
-        foreach ($connection->getDatabasePlatform()->getAlterSchemaSQL($schemaManager->createComparator()->compareSchemas($from, $to)) as $sql) {
-            $connection->executeStatement($sql);
+        foreach ([Version20261124100000::class, Version20261126100000::class] as $class) {
+            $migration = new $class($connection, new NullLogger());
+            $from = $schemaManager->introspectSchema();
+            $to = clone $from;
+            $migration->up($to);
+            foreach ($connection->getDatabasePlatform()->getAlterSchemaSQL($schemaManager->createComparator()->compareSchemas($from, $to)) as $sql) {
+                $connection->executeStatement($sql);
+            }
         }
 
         return new EntityManager($connection, $config);
