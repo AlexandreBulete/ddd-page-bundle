@@ -1,3 +1,12 @@
+## [1.2.0] - 2026-11-26
+
+### 🚀 Features
+
+- Page placements
+
+### 📚 Documentation
+
+- Update CHANGELOG.md for 1.1.1
 ## [1.1.1] - 2026-11-25
 
 ### 🐛 Bug Fixes
