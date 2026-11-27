@@ -1,3 +1,12 @@
+## [1.3.0] - 2026-11-27
+
+### 🚀 Features
+
+- Page form in cards, status pill and link to the public page
+
+### 📚 Documentation
+
+- Update CHANGELOG.md for 1.2.0
 ## [1.2.0] - 2026-11-26
 
 ### 🚀 Features
