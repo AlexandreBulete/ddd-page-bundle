@@ -1,4 +1,8 @@
 page:
+    section:
+        content: Content
+        publication: Publication
+        address: Address
     ui:
         pages: Pages
         page: page
@@ -7,6 +11,9 @@ page:
     menu:
         pages: Pages
     page:
+        status: Status
+        status_online: Online
+        status_offline: Offline
         index: Pages
         title: Title
         body: Text

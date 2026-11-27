@@ -85,6 +85,8 @@ per request and placement.
 page:
     admin:
         enabled: true   # Sylius screens; false for a headless setup
+    public_route: page  # the route showing a page (takes `slug`): the back
+                        # office prefixes the slug field and links to the page
     placements:         # where the site links pages; none by default
         legal: Footer — legal
         menu: Main menu

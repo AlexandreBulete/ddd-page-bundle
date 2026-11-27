@@ -19,6 +19,8 @@ use Sylius\Resource\Metadata\Delete;
 use Sylius\Resource\Metadata\Index;
 use Sylius\Resource\Metadata\Update;
 use Sylius\Resource\Model\ResourceInterface;
+use AlexandreBulete\DddSyliusBundle\Admin\View\AdminRecordInterface;
+use AlexandreBulete\DddSyliusBundle\Admin\View\StatusBadge;
 use Symfony\Component\Uid\AbstractUid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -38,7 +40,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
     ],
 )]
 #[UniquePageSlug]
-final class PageResource implements ResourceInterface
+final class PageResource implements ResourceInterface, AdminRecordInterface
 {
     public function __construct(
         public ?AbstractUid $id = null,
@@ -54,6 +56,7 @@ final class PageResource implements ResourceInterface
         public ?string $placement = null,
         /** The placement's label, for the list. */
         public ?string $placementLabel = null,
+        public ?string $publicUrl = null,
     ) {}
 
     public function getId(): ?AbstractUid
@@ -71,6 +74,21 @@ final class PageResource implements ResourceInterface
         if ($this->published && trim($this->body ?? '') === '') {
             $context->buildViolation('page.page.empty_online')->atPath('body')->addViolation();
         }
+    }
+
+    public function adminLabel(): ?string
+    {
+        return $this->title;
+    }
+
+    public function adminStatus(): ?StatusBadge
+    {
+        return $this->id === null ? null : ($this->published ? StatusBadge::success('page.page.status_online') : StatusBadge::neutral('page.page.status_offline'));
+    }
+
+    public function adminPublicUrl(): ?string
+    {
+        return $this->publicUrl;
     }
 
     public static function fromModel(Page $page, ?string $placementLabel = null): self

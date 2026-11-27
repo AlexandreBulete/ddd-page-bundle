@@ -32,7 +32,7 @@ class PageGrid extends AbstractGrid implements ResourceAwareGridInterface
             ->addField(StringField::create('title')->setLabel('page.page.title')->setSortable(true))
             ->addField(StringField::create('slug')->setLabel('page.slug.label'))
             ->addField(StringField::create('placementLabel')->setLabel('page.page.placement'))
-            ->addField(TwigField::create('published', '@SyliusBootstrapAdminUi/shared/grid/field/boolean.html.twig')->setLabel('page.page.published')->setSortable(true))
+            ->addField(TwigField::create('published', '@DddSylius/admin/grid/field/status.html.twig')->setLabel('page.page.status')->setPath('adminStatus')->setSortable(true, 'published'))
             ->addField(DateTimeField::create('updatedAt')->setLabel('page.page.updated_at')->setSortable(true))
             ->addActionGroup(MainActionGroup::create(CreateAction::create()))
             ->addActionGroup(ItemActionGroup::create(UpdateAction::create(), DeleteAction::create()))

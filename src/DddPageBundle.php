@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AlexandreBulete\DddPageBundle;
 
 use AlexandreBulete\DddPageBundle\Infrastructure\Config\ConfiguredPlacementCatalog;
+use AlexandreBulete\DddPageBundle\Infrastructure\Symfony\PublicPage;
 use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\Type\PageIdType;
 use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\Type\PlacementType;
 use AlexandreBulete\DddPageBundle\Infrastructure\Doctrine\Type\SlugType;
@@ -18,7 +19,7 @@ use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
  * Standalone pages (legal notice, privacy policy…), written in Markdown in a
  * Sylius back office and read through public queries.
  *
- * @phpstan-type PageConfig array{admin: array{enabled: bool}, placements: array<string, array{label: string, exclusive: bool}>}
+ * @phpstan-type PageConfig array{admin: array{enabled: bool}, public_route: ?string, placements: array<string, array{label: string, exclusive: bool}>}
  */
 final class DddPageBundle extends AbstractBundle
 {
@@ -36,6 +37,10 @@ final class DddPageBundle extends AbstractBundle
                             ->info('Sylius back-office screens. Turn off for a headless deployment.')
                         ->end()
                     ->end()
+                ->end()
+                ->scalarNode('public_route')
+                    ->info('The route of a page on the site, taking a "slug": the back office links to it.')
+                    ->defaultNull()
                 ->end()
                 ->arrayNode('placements')
                     ->info('Where the site links pages: key => label (or {label, exclusive}). An exclusive placement holds one page.')
@@ -69,6 +74,8 @@ final class DddPageBundle extends AbstractBundle
         if (self::migrationsEnabled($builder)) {
             $container->import($this->getPath() . '/config/services_migrations.php');
         }
+        // After the imports: services_admin.php loads Infrastructure/Symfony too.
+        $container->services()->set(PublicPage::class)->autowire()->arg('$route', $config['public_route']);
     }
 
     public function prependExtension(ContainerConfigurator $container, ContainerBuilder $builder): void

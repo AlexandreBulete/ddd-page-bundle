@@ -1,4 +1,8 @@
 page:
+    section:
+        content: Contenu
+        publication: Publication
+        address: Adresse
     ui:
         pages: Pages
         page: page
@@ -7,6 +11,9 @@ page:
     menu:
         pages: Pages
     page:
+        status: Statut
+        status_online: En ligne
+        status_offline: Hors ligne
         index: Pages
         title: Titre
         body: Texte

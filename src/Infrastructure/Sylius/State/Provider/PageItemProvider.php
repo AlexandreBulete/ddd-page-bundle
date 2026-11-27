@@ -9,6 +9,7 @@ use AlexandreBulete\DddPageBundle\Domain\Model\Page;
 use AlexandreBulete\DddPageBundle\Domain\ValueObject\PageId;
 use AlexandreBulete\DddPageBundle\Infrastructure\Sylius\Resource\PageResource;
 use AlexandreBulete\DddFoundation\Application\Query\QueryBusInterface;
+use AlexandreBulete\DddPageBundle\Infrastructure\Symfony\PublicPage;
 use Sylius\Resource\Context\Context;
 use Sylius\Resource\Context\Option\RequestOption;
 use Sylius\Resource\Metadata\Operation;
@@ -18,6 +19,7 @@ final readonly class PageItemProvider implements ProviderInterface
 {
     public function __construct(
         private QueryBusInterface $queryBus,
+        private PublicPage $publicPage,
     ) {}
 
     public function provide(Operation $operation, Context $context): ?PageResource
@@ -30,6 +32,11 @@ final readonly class PageItemProvider implements ProviderInterface
         /** @var Page $page */
         $page = $this->queryBus->ask(new FindPageQuery(PageId::fromString($id)));
 
-        return PageResource::fromModel($page);
+        $resource = PageResource::fromModel($page);
+        if ($page->published) {
+            $resource->publicUrl = $this->publicPage->url($page->slug->value());
+        }
+
+        return $resource;
     }
 }
